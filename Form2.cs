@@ -1,4 +1,13 @@
-﻿using System;
+﻿/*
+*
+* 
+* Ce projet a été réalisé à l'aide de : MENACER Cherifa, TAZI Mohamed Ilyes et ZOUGHAME Amina
+* 
+* 
+* 
+*/
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -837,109 +846,50 @@ namespace WindowsFormsApp1
 
         }
 
-        public Bitmap segmentation_contour(Bitmap b)
+        public Bitmap segmentation_contour(Bitmap bmap)
         {
-            Bitmap grad = new Bitmap((Bitmap)b);
-            int N = 7;
-            int pg;
-            int pr;
-            int pb;
-            int[,] cx = new int[N, N];
-            int[,] cy = new int[N, N];
-            for (int i = 0; i < N; i++)
-            {
-                for (int j = 0; j < N; j++)
+                int seuil = 127;
+                double[] t1 = { 1, 2, 1, 0, 0, 0, -1, -2, -1 };
+                double[] t2 = { 1, 0, -1, 0, 0, 0, -1, 0, -1 };
+                int[,] tab = new int[bmap.Width, bmap.Height];
+                int[,] tab2 = new int[bmap.Width, bmap.Height];
+                int taille = 3;
+                int value = new int();
+                Double values;
+
+                for (int i = 1; i < (bmap.Width - 1); i++)
                 {
-                    if (j == 0) { cx[i, j] = 1; }
-                    if (j == 1) { cx[i, j] = 0; }
-                    if (j == 2) { cx[i, j] = -1; }
-                    if (i == 0) { cy[i, j] = 1; }
-                    if (i == 1) { cy[i, j] = 0; }
-                    if (i == 2) { cy[i, j] = -1; }
-                }
-            }
-
-            int f = (int)(N / 2);
-            int l = -(int)(N / 2);
-            int k = -(int)(N / 2);
-            int sg = 0;
-            int sr = 0;
-            int sb = 0;
-            int sg2 = 0;
-            int sr2 = 0;
-            int sb2 = 0;
-            int seuil = 200;
-
-
-            for (int i = f; i < b.Width - f; i++)
-            {
-                for (int j = f; j < b.Height - f; j++)
-                {
-
-                    sg = 0;
-                    sr = 0;
-                    sb = 0;
-                    sg2 = 0;
-                    sr2 = 0;
-                    sb2 = 0;
-                    for (int z = k; z <= f; z++)
+                    for (int j = 1; j < (bmap.Height - 1); j++)
                     {
-                        for (int nb = l; nb <= f; nb++)
-                        {
-                            Color c3 = b.GetPixel(i + z, j + nb);
-                            pg = (byte)c3.R;
-                            pr = (byte)c3.G;
-                            pb = (byte)c3.B;
+                        tab[i, j] = (bmap.GetPixel(i - 1, j - 1).R * 1 + bmap.GetPixel(i - 1, j).R * 2 + bmap.GetPixel(i - 1, j + 1).R * 1 + bmap.GetPixel(i, j - 1).R * 0 + bmap.GetPixel(i, j).R * 0 + bmap.GetPixel(i, j + 1).R * 0 + bmap.GetPixel(i + 1, j - 1).R * -1 + bmap.GetPixel(i + 1, j).R * -2 + bmap.GetPixel(i + 1, j + 1).R * -1);
+                        tab2[i, j] = (bmap.GetPixel(i - 1, j - 1).R * 1 + bmap.GetPixel(i - 1, j).R * 0 + bmap.GetPixel(i - 1, j + 1).R * -1 + bmap.GetPixel(i, j - 1).R * 2 + bmap.GetPixel(i, j).R * 0 + bmap.GetPixel(i, j + 1).R * -2 + bmap.GetPixel(i + 1, j - 1).R * 1 + bmap.GetPixel(i + 1, j).R * 0 + bmap.GetPixel(i + 1, j + 1).R * -1);
 
-                            sg = sg + pg * cx[f + z, f + nb];
-                            sr = sr + pr * cx[f + z, f + nb];
-                            sb = sb + pb * cx[f + z, f + nb];
-                            sg2 = sg2 + pg * cy[f + z, f + nb];
-                            sr2 = sr2 + pr * cy[f + z, f + nb];
-                            sb2 = sb2 + pb * cy[f + z, f + nb];
+                    }
+                }
+
+
+                for (int i = 0; i < (bmap.Width); i++)
+                {
+                    for (int j = 0; j < (bmap.Height); j++)
+                    {
+
+                        value = (tab[i, j] * tab[i, j] + tab2[i, j] * tab2[i, j]);
+                        values = Math.Sqrt((double)value);
+
+                        if (values < seuil)
+                        {
+                            values = 255;
                         }
+                        else
+                        {
+                            values = 0;
+                        }
+                        bmap.SetPixel(i, j, Color.FromArgb((int)values, (int)values, (int)values));
                     }
 
-                    sr = sr / (N * N);
-                    sg = sg / (N * N);
-                    sb = sb / (N * N);
-                    sr2 = sr2 / (N * N);
-                    sg2 = sg2 / (N * N);
-                    sb2 = sb2 / (N * N);
-                    if (sr < 0) { sr = 0; }
-                    if (sg < 0) { sg = 0; }
-                    if (sb < 0) { sb = 0; }
-                    if (sr > 255) { sr = 255; }
-                    if (sg > 255) { sg = 255; }
-                    if (sb > 255) { sb = 255; }
-                    if (sr2 < 0) { sr2 = 0; }
-                    if (sg2 < 0) { sg2 = 0; }
-                    if (sb2 < 0) { sb2 = 0; }
-                    if (sr2 > 255) { sr2 = 255; }
-                    if (sg2 > 255) { sg2 = 255; }
-                    if (sb2 > 255) { sb2 = 255; }
-
-                    int a2 = (int)Math.Sqrt(((sg * sg) + (sg2 * sg2)));
-                    int a3 = (int)Math.Sqrt(((sb * sb) + (sb2 * sb2)));
-                    int a = (int)Math.Sqrt(((sr * sr) + (sr2 * sr2)));
-                    grad.SetPixel(i, j, Color.FromArgb(a, a2, a3));
-                    Color cc;
-                    cc = b.GetPixel(i, j);
-                    int pp1 = (byte)cc.R;
-                    int pp2 = (byte)cc.G;
-                    int pp3 = (byte)cc.B;
-                    if (pp1 <= seuil) { pp1 = 0; }
-                    if (pp1 > seuil) { pp1 = 255; }
-                    if (pp2 <= seuil) { pp2 = 0; }
-                    if (pp2 > seuil) { pp2 = 255; }
-                    if (pp3 <= seuil) { pp3 = 0; }
-                    if (pp3 > seuil) { pp3 = 255; }
-                    b.SetPixel(i, j, Color.FromArgb(pp1, pp2, pp3));
                 }
 
-            }
-
-            return b;
+            return bmap;
         }
 
         private void button4_Click_1(object sender, EventArgs e)
@@ -1008,7 +958,8 @@ namespace WindowsFormsApp1
 
         private void button5_Click(object sender, EventArgs e)
         {
-            Bitmap copy8 = new Bitmap((Bitmap)this.pictureBox_NG.Image);
+            //Bitmap copy8 = new Bitmap((Bitmap)this.pictureBox_NG.Image);
+            Bitmap copy8 = new Bitmap((Bitmap)this.pictureBox_Original.Image);
             copy8 = gaussien(copy8);
             this.pictureBox_Gaussien.Image = copy8;
         }
@@ -1266,7 +1217,8 @@ namespace WindowsFormsApp1
 
         private void button_Convolution_Click(object sender, EventArgs e)
         {
-            Bitmap copy = new Bitmap((Bitmap)this.pictureBox_NG.Image);
+            //Bitmap copy = new Bitmap((Bitmap)this.pictureBox_NG.Image);
+            Bitmap copy = new Bitmap((Bitmap)this.pictureBox_Original.Image);
             copy = convolution(copy);
             this.pictureBox_Convolution.Image = copy;
         }
